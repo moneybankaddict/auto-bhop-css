@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36511.14 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cheat", "cheat.vcxproj", "{D07E2719-AA91-4A5E-89ED-4D73C5484A5A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D07E2719-AA91-4A5E-89ED-4D73C5484A5A}.Release|x64.ActiveCfg = Release|x64
+		{D07E2719-AA91-4A5E-89ED-4D73C5484A5A}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EC25CC6C-1DD4-4718-A5A0-251586DE5479}
+	EndGlobalSection
+EndGlobal

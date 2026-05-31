@@ -1,0 +1,116 @@
+﻿#pragma once
+#include <windows.h>
+#include <TlHelp32.h>
+#include <vector>
+#include <string>
+#include <memory>
+
+extern "C" intptr_t
+Luck_ReadVirtualMemory
+(
+	HANDLE ProcessHandle,
+	PVOID BaseAddress,
+	PVOID Buffer,
+	ULONG NumberOfBytesToRead,
+	PULONG NumberOfBytesRead
+);
+
+extern "C" intptr_t
+Luck_WriteVirtualMemory
+(
+	HANDLE Processhandle,
+	PVOID BaseAddress,
+	PVOID Buffer,
+	ULONG NumberOfBytesToWrite,
+	PULONG NumberOfBytesWritten
+);
+
+class memory_t final
+{
+public:
+	memory_t() = default;
+	~memory_t() = default;
+
+	std::uint32_t find_process_id(const std::string& process_name);
+	std::uint64_t find_module_address(const std::string& module_name);
+
+	bool attach_to_process(const std::string& process_name);
+
+	std::string read_string(std::uint64_t address);
+	bool read_raw(void* buffer, uint64_t address, size_t size);
+
+	template <typename T>
+	T read(std::uint64_t address);
+
+	template <typename T>
+	bool read_checked(std::uint64_t address, T& value);
+
+	template <typename T>
+	void write(std::uint64_t address, T value);
+
+	template <typename T>
+	bool write_checked(std::uint64_t address, T value);
+
+	std::uint32_t get_process_id();
+	std::uint64_t get_module_address();
+	HANDLE get_process_handle();
+
+	bool is_process_alive() const;
+	void reset();
+private:
+	std::uint32_t process_id = 0;
+	std::uint64_t base_address = 0;
+	HANDLE process_handle = nullptr;
+};
+
+template <typename T>
+T memory_t::read(uint64_t address)
+{
+	T buffer{};
+
+	Luck_ReadVirtualMemory(process_handle, reinterpret_cast<void*>(address), &buffer, sizeof(T), nullptr);
+
+	return buffer;
+}
+
+template <typename T>
+bool memory_t::read_checked(uint64_t address, T& value)
+{
+	value = {};
+
+	if (Luck_ReadVirtualMemory(process_handle, reinterpret_cast<void*>(address), &value, sizeof(T), nullptr) == 0)
+		return true;
+
+	SIZE_T bytes_read = 0;
+	return ReadProcessMemory(
+		process_handle,
+		reinterpret_cast<LPCVOID>(address),
+		&value,
+		sizeof(T),
+		&bytes_read
+	) && bytes_read == sizeof(T);
+}
+
+template <typename T>
+void memory_t::write(uint64_t address, T value)
+{
+	Luck_WriteVirtualMemory(process_handle, reinterpret_cast<void*>(address), &value, sizeof(T), nullptr);
+}
+
+template <typename T>
+bool memory_t::write_checked(uint64_t address, T value)
+{
+	if (Luck_WriteVirtualMemory(process_handle, reinterpret_cast<void*>(address), &value, sizeof(T), nullptr) == 0)
+		return true;
+
+	SIZE_T bytes_written = 0;
+	return WriteProcessMemory(
+		process_handle,
+		reinterpret_cast<LPVOID>(address),
+		&value,
+		sizeof(T),
+		&bytes_written
+	) && bytes_written == sizeof(T);
+}
+
+inline std::unique_ptr<memory_t> memory = std::make_unique<memory_t>();
